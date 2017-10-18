@@ -6,6 +6,7 @@
 module VectorSpace where
 
 type Vector = (Double, Double, Double)
+type Test = (String, Bool)
 
 vecZero :: Vector
 vecZero = (0, 0, 0)
@@ -25,6 +26,43 @@ vecF x ys =
     [vecMagnitude (vecSum xNeg y) | y <- ys]
 
 
+runTests :: IO ()
+runTests = putStrLn (formatTests tests)
+    where
+    tests = [
+        ("vecScalarProd Test 1", test1_vecScalarProd),
+        ("vecScalarProd Test 2", test2_vecScalarProd),
+        ("vecScalarProd Test 3", test3_vecScalarProd)]
+
+formatTests :: [Test] -> String
+formatTests [] = ""
+formatTests ((name, fn):tests) = name ++ ": " ++ (if fn == True then "Passed" else "Failed") ++ "\n" ++ formatTests tests
+
+{-
+Function: vecScalarProd
+Test Case Number: 1
+Input: 0, (1,2,3)
+Expected Output: vecZero
+Actual Output: vecZero
+-}
+test1_vecScalarProd = vecScalarProd 0 (1,2,3) == vecZero
+{-
+Function: vecScalarProd
+Test Case Number: 2
+Input: 5, vecZero
+Expected Output: vecZero
+Actual Output: vecZero
+-}
+test2_vecScalarProd = vecScalarProd 5 vecZero == vecZero
+{-
+Function: vecScalarProd
+Test Case Number: 3
+Input: 5, (1, -1, 5)
+Expected Output: ||output|| == 5 * ||(1, -1, 5)||
+Actual Output: ||output|| == 5 * ||(1, -1, 5)||
+-}
+test3_vecScalarProd = let x = (1,(-1),5) in
+    vecMagnitude (vecScalarProd 5 x) == 5 * vecMagnitude x
 
 {-
 Function:
@@ -33,15 +71,6 @@ Input:
 Expected Output:
 Actual Output:
 
-vecScalerProd 0 x should return vecZero
--}
-test1_vecScalarProd = vecScalarProd 0 (1,2,3) == vecZero
-test2_vecScalarProd = vecScalarProd 5 (0,0,0) == vecZero
-test3_vecScalarProd = let x = (1,(-1),5) in
-    vecMagnitude (vecScalarProd 5 x) == 5 * vecMagnitude x
-{-
+vecScalarProd 0 x should return vecZero
 -}
 
-listConcat m n f
-    | m > n  = []
-    | m <= n = listConcat
