@@ -33,3 +33,24 @@ instance VectorSpace Vector2 where
     vecMagnitude (Vector2 (a, b)) =
         sqrt(a**2 + b**2)
 
+instance VectorSpace Vector3 where
+    vecZero = Vector3 (0, 0, 0)
+    vecSum (Vector3 (a1, b1, c1)) (Vector3 (a2, b2, c2)) =
+        Vector3 (a1+a2, b1+b2, c1+c2)
+    vecScalarProd x (Vector3 (a, b, c)) =
+        Vector3 (x*a, x*b, x*c)
+    vecMagnitude (Vector3 (a, b, c)) =
+        sqrt(a**2 + b**2 + c**2)
+
+instance VectorSpace Vector4 where
+    vecZero = Vector4 (0, 0, 0, 0)
+    vecSum (Vector4 (a1, b1, c1, d1)) (Vector4 (a2, b2, c2, d2)) =
+        Vector4 (a1+a2, b1+b2, c1+c2, d1+d2)
+    vecScalarProd x (Vector4 (a, b, c, d)) =
+        Vector4 (x*a, x*b, x*c, x*d)
+    vecMagnitude (Vector4 (a, b, c, d)) =
+        sqrt(a**2 + b**2 + c**2 + d**2)
+
+
+
+
