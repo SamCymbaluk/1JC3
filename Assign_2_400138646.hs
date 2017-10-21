@@ -25,7 +25,6 @@ vecF x ys =
     let xNeg = vecScalarProd (-1) x in
     [vecMagnitude (vecSum xNeg y) | y <- ys]
 
-
 runTests :: IO ()
 runTests = putStrLn (formatTests tests)
     where
@@ -91,9 +90,9 @@ Actual Output: ||output|| == 5 * ||(1, -1, 5)||
 
 Function: vecScalarProd
 Test Case Number: 4
-Input: 5, (1, -1, 5)
-Expected Output: ||output|| == 5 * ||(1, -1, 5)||
-Actual Output: ||output|| == 5 * ||(1, -1, 5)||
+Input: 5, (1.0, -1.0, 5.0)
+Expected Output: ||output|| == 5.0 * ||(1.0, -1.0, 5.0)||
+Actual Output: ||output|| == 5.0 * ||(1.0, -1.0, 5.0)||
 
 Function: vecSum
 Test Case Number: 1
