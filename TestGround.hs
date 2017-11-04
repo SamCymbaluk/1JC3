@@ -1,7 +1,15 @@
+import Test.QuickCheck
+
+
+echoTillQuit :: IO ()
+echoTillQuit = do { line <- getLine;
+                  print line;
+                  if line /= "quit" then echoTillQuit else return ()}
+
+
+
 type Row = [Float]
 type Matrix = [Row]
-
-
 
 booleanFn a b c =
     if a == True
