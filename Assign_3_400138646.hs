@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 -- Assignment 3
 -- Author: Sam Cymbaluk
 -- ID: 400138646
@@ -5,19 +6,26 @@
 
 module Polynomial where
 
+import Test.QuickCheck
+import Generic.Random.Generic
+import GHC.Generics
+
 data Poly =
       X
     | Coef Integer
     | Sum Poly Poly
     | Prod Poly Poly
-    deriving Show
+    deriving (Show, Generic)
 
 instance Eq Poly where
     X            == X            = True
     (Coef c1)    == (Coef c2)    = c1 == c2
-    (Sum p1 p2)  == (Sum p3 p4)  = p1 == p3 && p2 == p4
-    (Prod p1 p2) == (Prod p3 p4) = p1 == p3 && p2 == p4
+    (Sum p1 p2)  == (Sum p3 p4)  = p1 == p3 && p2 == p4 -- Constructors match -> call == recursively on values
+    (Prod p1 p2) == (Prod p3 p4) = p1 == p3 && p2 == p4 -- Constructors match -> call == recursively on values
     _            == _            = False -- If it reaches this line, it has mismatched constructors
+
+instance Arbitrary Poly where
+  arbitrary = genericArbitraryRec uniform `withBaseCase` return X
 
 {-
 Evaluate a polynomial at a given value by
@@ -95,6 +103,8 @@ Ex: 5x^3 -> (3, 5)
 polyCollectLike :: Poly -> [(Integer, Integer)]
 polyCollectLike (Sum p1 p2) = (polyCollectLike p1) ++ (polyCollectLike p2) -- Sum -> two terms to handle separately
 polyCollectLike (Prod p1 p2) = [polyCollectLikeAux (Prod p1 p2) (0, 1)] -- Prod -> a single term convert to tuple form
+polyCollectLike (Coef a) = [(0, a)]
+polyCollectLike X = [(1, 1)]
 
 {-
 Takes a single term of an expanded polynomial and returns the tuple form.
@@ -151,7 +161,7 @@ polyFromList = listToPoly . reverse
 
 {-
 Converts a polynomial into a string that can be interpreted by most calculators
-Great for checking your functions work correctly!
+Great for checking that your functions work correctly!
 -}
 polyToStr :: Poly -> String
 polyToStr X            = "x"
@@ -169,6 +179,74 @@ addZip (x:xs) []     = [x] ++ addZip (xs) []
 addZip [] (y:ys)     = [y] ++ addZip [] (ys)
 addZip [] []         = []
 
+{-
+Test Plan
+
+Function: polyValue
+Test Case Number: 1
+Input: (Coef 1) 0
+Expected Output: 1
+Actual Output: 1
+
+Function: polyValue
+Test Case Number: 2
+Input: X 5
+Expected Output: 5
+Actual Output: 5
+
+Function: polyValue
+Test Case Number: 3
+Input (simplified): (x - 3)*(x + 2)*(5 - x**2)**2 at x = -5
+Input: (Prod (Sum X (Coef (-3))) (Prod (Sum X (Coef 2)) (Prod (Sum (Coef 5) (Prod (Coef (-1)) (Prod X X))) (Sum (Coef 5) (Prod (Coef (-1)) (Prod X X)))))) (-5)
+Expected Output: 9600
+Actual Output: 9600
+
+Function: polyDegree
+Test Case Number: 1
+Input: (Prod (Coef 0) X)
+Expected Output: 0
+Actual Output: 0
+
+Function: polyDegree
+Test Case Number: 2
+Input: (Prod X (Sum X (Coef 5)))
+Expected Output: 2
+Actual Output: 2
+
+Function: polyDegree
+Test Case Number: 3
+Input: (Prod (Sum X (Coef (-3))) (Prod (Sum X (Coef 2)) (Prod (Sum (Coef 5) (Prod (Coef (-1)) (Prod X X))) (Sum (Coef 5) (Prod (Coef (-1)) (Prod X X))))))
+Expected Output: 6
+Actual Output: 6
+
+Function: polyDeriv
+Test Case Number: 1
+Input: X
+Expected Output: Coef 1
+Actual Output: Coef 1
+
+Function: polyDeriv
+Test Case Number: 2
+Input: (Coef 5)
+Expected Output: Coef 0
+Actual Output: Coef 0
+
+Function: polyDeriv
+Test Case Number: 3
+Input: (Prod X (Sum X (Coef 5)))
+Expected Output: Sum (Prod (Coef 1) (Sum X (Coef 5)) (Prod (Sum (Coef 1) (Coef 0)) X)
+Actual Output: Sum (Prod (Coef 1) (Sum X (Coef 5)) (Prod (Sum (Coef 1) (Coef 0)) X)
+-}
+
+polyDerivProp1 :: Poly -> Bool
+polyDerivProp1 p = let
+    p' = polyDeriv p
+    pDeg = polyDegree p
+    p'Deg = polyDegree p'
+   in (pDeg == 0) || (p'Deg + 1 == pDeg)
 
 
-
+polyValueProp1 :: (Poly, Integer) -> Bool
+polyValueProp1 (p, n) = (polyValue p n) == (value (reverse (polyAsList p)) n 0)
+    where value (x:xs) n val = val + x * (n^(toInteger (length xs))) + (value xs n 0)
+          value [] n val = val
