@@ -41,12 +41,27 @@ polyParseTerm termStr = let
             if (length $ last split) == 0 then 1 else read $ tail $ last split
    in (pwr, coef)
 
+getPoly :: FilePath -> IO (Poly Integer)
+getPoly path = do str <- readFile path
+                  return $ (polyListToPoly . polyParse) str
 
 
 
 
 
 
+{-
+This function takes a list of integers and converts it to the recursive Poly definition
+E.g., [1,2,3] -> 1 + 2x + 3x^2
+-}
+polyListToPoly :: [Integer] -> Poly Integer
+polyListToPoly [] = Coef 0
+polyListToPoly poly = let
+    c = last poly
+    cs = init poly
+   in Sum (Prod (Coef c) (termPower (length cs))) (polyListToPoly cs)
+      where termPower 0 = Coef 1
+            termPower p = Prod X (termPower (p - 1))
 
 {-
 Takes a list of polynomial terms in tuple form (pwr, coef),
