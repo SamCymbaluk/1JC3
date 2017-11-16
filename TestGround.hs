@@ -1,5 +1,6 @@
 import Test.QuickCheck
 
+import System.Random
 
 echoTillQuit :: IO ()
 echoTillQuit = do { line <- getLine;
@@ -99,3 +100,34 @@ substitute matrix = foldr next [last (last matrix)] (init matrix) where
 
 solve :: Matrix -> Row
 solve = substitute . gaussianReduce
+
+fact 0 = 1
+fact n = n * fact (n - 1)
+
+factProp :: Int -> Bool
+factProp n = (fact n) `div` n == fact(n - 1)
+
+{-
+Prove
+[x] ++ xs == x:xs
+
+Base case
+[x] ++ [] == [x]
+ = (x:[]) ++ []          -- By syntax
+ = x : ([] ++ [])        -- By def ++.2
+ = x : []                -- By def ++.1
+ = [x]                   -- By Syntax
+
+Inductive case
+[x] ++ y:ys == x:y:ys
+ = (x:[]) ++ y:ys        -- By syntax
+ = x : ([] ++ y:ys)      -- By def ++.2
+ = x : (y:ys)            -- By def ++.1
+ = x:y:ys                -- By syntax
+
+Without Induction
+ = (x:[]) ++ xs            -- By syntax
+ = x : ([] ++ xs)          -- By def ++.2
+ = x : xs                  -- By def ++.1
+-}
+
