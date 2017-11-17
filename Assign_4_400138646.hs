@@ -41,7 +41,11 @@ polyListDeriv [x]  = []
 polyListDeriv poly = let
     x = last poly
     xs = init poly
-   in (polyListDeriv xs) ++ [x * (toInteger (length xs))]
+   in (polyListDeriv xs) ++ [x * (toInteger (length xs))]  -- The length of the remaining list represents the power
+
+
+polyListSum :: [Integer] -> [Integer] -> [Integer]
+polyListSum p1 p2 = addZip p1 p2
 
 polyListProd :: [Integer] -> [Integer] -> [Integer]
 polyListProd p1 p2 = let
@@ -86,9 +90,6 @@ The term must be represented as a tuple of term power and coefficient
 polyTermToList :: Num a => (Integer, a) -> [a]
 polyTermToList (pwr, coef) = [if pwr == p then coef else 0 | p <- [0..pwr]]
 
-polyListSum :: [Integer] -> [Integer] -> [Integer]
-polyListSum p1 p2 = addZip p1 p2
-
 {-
 This function takes a list of integers and converts it to the recursive Poly definition
 E.g., [1,2,3] -> 1 + 2x + 3x^2
@@ -119,8 +120,7 @@ addZip [] (y:ys)     = [y] ++ addZip [] (ys)
 addZip [] []         = []
 
 containsFalse :: [Bool] -> Bool
-containsFalse [] = False
-containsFalse (x:xs) = ((not x) || (containsFalse xs))
+containsFalse bools = not (foldr (&&) True bools)
 
 {-
 Trims a list by removing trailing 0 elements
@@ -131,7 +131,39 @@ trimList = reverse . trim . reverse
     where trim (x:xs) = if x /= 0 then x:xs else trim xs
           trim []     = []
 
-polyListProdProp1 :: ([Integer], [Integer]) -> Bool
-polyListProdProp1 (p1, p2) = let
+implies :: Bool -> Bool -> Bool
+True `implies` False = False
+_    `implies` _     = True
+
+{-
+polyListValue should return the constant when x = 0 and degree > 0
+-}
+polyListValueProp1 :: [Integer] -> Bool
+polyListValueProp1 poly = (length poly < 0) `implies` (polyListValue poly 0 == last poly)
+
+{-
+Summing two polynomials should not change the max degree, when both polynomials have degree > 0
+-}
+polyListDegreeProp1 :: ([Integer], [Integer]) -> Bool
+polyListDegreeProp1 (p1, p2) = (length p1 > 0 && length p2 > 0) `implies` ((max (polyListDegree p1) (polyListDegree p2)) == (polyListDegree (polyListSum p1 p2)))
+
+polyListDerivProp1 :: [Integer] -> Bool
+polyListDerivProp1 p = let
+    p' = polyListDeriv p
+   in (length p > 0) `implies` (length p == length p' + 1)
+
+{-
+f(x) + g(x) = (f `polyListSum` g)(x)
+-}
+polyListSumProp1 :: ([Integer], [Integer], Integer) -> Bool
+polyListSumProp1 (p1, p2, n) = let
+    sum = polyListSum p1 p2
+   in (polyListValue p1 n) + (polyListValue p2 n) == (polyListValue sum n)
+
+{-
+f(x) * g(x) = (f `polyListProd` g)(x)
+-}
+polyListProdProp1 :: ([Integer], [Integer], Integer) -> Bool
+polyListProdProp1 (p1, p2, n) = let
     prod = polyListProd p1 p2
-   in not (containsFalse [(polyListValue p1 n) * (polyListValue p2 n) == (polyListValue prod n) | n <- [-10..10]])
+   in (polyListValue p1 n) * (polyListValue p2 n) == (polyListValue prod n)
