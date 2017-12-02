@@ -131,3 +131,11 @@ Without Induction
  = x : xs                  -- By def ++.1
 -}
 
+iter 1 f = f
+iter n f = f . (iter (n - 1) f)
+
+data Pos = Pos Integer
+    deriving Show
+
+fromIntList :: [Integer] -> [Pos]
+fromIntList = map Pos . filter (>=0)
